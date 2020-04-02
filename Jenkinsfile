@@ -75,12 +75,13 @@ node {
             withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {
                 stage('CREATE SCRATCH ORG'){
                     SFDC_USERNAME = deployScratch(toolbelt,CONNECTED_APP_CONSUMER_KEY_DEV, HUB_ORG_USERNAME_DEV, ORG_ALIAS_DEVOPS_DEV, SFDC_HOST, jwt_key_file)
+                    echo SFDC_USERNAME
                 }
                 stage('PUSH CODE'){
                     pushCodeScratchOrg(toolbelt,SFDC_USERNAME)
                 }
                 stage('APEX TEST'){
-                    runApexTest(toolbelt, RUN_ARTIFACT_DIR, HUB_ORG_USERNAME_DEV)
+                    runApexTest(toolbelt, RUN_ARTIFACT_DIR, SFDC_USERNAME)
                 }
                 stage('GET RESULTS'){
                     junit keepLongStdio: true, testResults: 'tests/**/*-junit.xml'
