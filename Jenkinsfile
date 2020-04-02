@@ -25,6 +25,19 @@ node {
     def ORG_ALIAS_DEVOPS_UAT = env.ORG_ALIAS_DEVOPS_UAT
 
 
+    stage('CLEAN WORKSPACE'){
+        cleanWs()
+        dir("${env.WORKSPACE}@tmp") {
+            deleteDir()
+        }
+        dir("${env.WORKSPACE}@script") {
+            deleteDir()
+        }
+        dir("${env.WORKSPACE}@script@tmp") {
+            deleteDir()
+        }
+    }
+
     if(env.BRANCH_NAME.startsWith('developer_')){
         stage('LOGOUT SFDX'){
             echo '------------------ INICIANDO O LOGOUT '
