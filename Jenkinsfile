@@ -28,11 +28,11 @@ node {
     withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {
         stage('Create Scratch Org') {
 
-            rc = bat returnStatus: true, script: "\"${toolbelt}\" force:auth:jwt:grant --clientid ${CONNECTED_APP_CONSUMER_KEY} --username ${HUB_ORG} --setalias ${ORG_ALIAS_DEVOPS_PRD} --instanceurl ${SFDC_HOST} --jwtkeyfile \"${jwt_key_file}\" "
+            rc = bat returnStatus: true, script: "\"${toolbelt}\" force:auth:jwt:grant --clientid ${CONNECTED_APP_CONSUMER_KEY} --username ${HUB_ORG} --setalias ${ORG_ALIAS_DEVOPS_PRD} --instanceurl ${SFDC_HOST} --setdefaultdevhubusername --jwtkeyfile \"${jwt_key_file}\" "
             if (rc != 0) { error 'hub org authorization failed' }
 
             // need to pull out assigned username
-            rmsg = bat returnStdout: true, script: "\"${toolbelt}\" force:org:create --definitionfile config/project-scratch-def.json --json --targetdevhubusername ${ORG_ALIAS_DEVOPS_PRD}"
+            rmsg = bat returnStdout: true, script: "\"${toolbelt}\" force:org:create --definitionfile config/project-scratch-def.json --json --setdefaultusername --targetdevhubusername ${ORG_ALIAS_DEVOPS_PRD}"
             printf rmsg
             def jsonSlurper = new JsonSlurperClassic()
             def robj = jsonSlurper.parseText(rmsg)
