@@ -28,8 +28,13 @@ node {
     if(env.BRANCH_NAME.startsWith('developer_')){
         stage('LOGOUT SFDX'){
             echo '------------------ INICIANDO O LOGOUT '
-                rc = sh returnStatus: true, script: "${toolbelt} force:auth:logout --targetusername ${ORG_ALIAS_DEVOPS_PRD} -p"
-                if (rc != 0) { error ' ERROR IN LOGOUT ' }
+                try{
+                    rc = sh returnStatus: true, script: "${toolbelt} force:auth:logout --targetusername ${ORG_ALIAS_DEVOPS_PRD} -p"
+                    if (rc != 0) { echo ' ERROR IN LOGOUT ' }
+                }catch (all) {
+                    echo all
+                }
+                
             echo '------------------ FINALIZANDO O LOGOUT '
         }
     
