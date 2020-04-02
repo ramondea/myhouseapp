@@ -74,7 +74,7 @@ node {
             echo '------------------ INICIANDO O SCRATCH ORG'
             withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {
                 stage('CREATE SCRATCH ORG'){
-                    deployScratch(toolbelt,CONNECTED_APP_CONSUMER_KEY_DEV, HUB_ORG_USERNAME_DEV, ORG_ALIAS_DEVOPS_DEV, SFDC_HOST, jwt_key_file)
+                    SFDC_USERNAME = deployScratch(toolbelt,CONNECTED_APP_CONSUMER_KEY_DEV, HUB_ORG_USERNAME_DEV, ORG_ALIAS_DEVOPS_DEV, SFDC_HOST, jwt_key_file)
                 }
                 stage('PUSH CODE'){
                     pushCodeScratchOrg(toolbelt,SFDC_USERNAME)
@@ -281,8 +281,7 @@ def deployScratch(toolbelt,appKey, hubOrgUsername, orgAlias, sfdcHost, jwtKeyFil
     def jsonSlurper = new JsonSlurperClassic()
     def robj = jsonSlurper.parseText(rmsg)
     if (robj.status != 0) { error 'org creation failed: ' + robj.message }
-    SFDC_USERNAME=robj.result.username
-    robj = null
+    return robj.result.username
 }
 
 def pushCodeScratchOrg(toolbelt,sfdcUsername){
