@@ -24,6 +24,13 @@ node {
     def CONNECTED_APP_CONSUMER_KEY_UAT =env.CONNECTED_APP_CONSUMER_KEY_DEVOPS_UAT
     def ORG_ALIAS_DEVOPS_UAT = env.ORG_ALIAS_DEVOPS_UAT
 
+    //dev variables or other environments (somente para desenvolvimento deste jenkinsfile)
+    def HUB_ORG_USERNAME_DEV =env.HUB_ORG_USERNAME_DEV
+    //def SFDC_HOST_UAT = env.SFDC_HOST_DEVOPS_PRD
+    //def JWT_KEY_CRED_ID = env.JWT_CRED_ID_DEVOPS_PRD // utilizado para todos os ambientes
+    def CONNECTED_APP_CONSUMER_KEY_DEV =env.CONNECTED_APP_CONSUMER_KEY_DEVOPS_DEV
+    def ORG_ALIAS_DEVOPS_DEV = env.ORG_ALIAS_DEVOPS_DEV
+
 
     stage('CLEAN WORKSPACE'){
         cleanWs()
@@ -42,7 +49,7 @@ node {
         stage('LOGOUT SFDX'){
             echo '------------------ INICIANDO O LOGOUT '
                 try{
-                    rc = sh returnStatus: true, script: "${toolbelt} force:auth:logout --targetusername ${ORG_ALIAS_DEVOPS_PRD} -p"
+                    rc = sh returnStatus: true, script: "${toolbelt} force:auth:logout --targetusername ${ORG_ALIAS_DEVOPS_DEV} -p"
                     if (rc != 0) { echo ' ERROR IN LOGOUT ' }
                 }catch (all) {
                     echo all
@@ -67,13 +74,13 @@ node {
             echo '------------------ INICIANDO O SCRATCH ORG'
             withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {
                 stage('CREATE SCRATCH ORG'){
-                    deployScratch(toolbelt,CONNECTED_APP_CONSUMER_KEY_UAT, HUB_ORG_USERNAME_UAT, ORG_ALIAS_DEVOPS_UAT, SFDC_HOST, jwt_key_file)
+                    deployScratch(toolbelt,CONNECTED_APP_CONSUMER_KEY_DEV, HUB_ORG_USERNAME_DEV, ORG_ALIAS_DEVOPS_DEV, SFDC_HOST, jwt_key_file)
                 }
                 stage('PUSH CODE'){
                     pushCodeScratchOrg(toolbelt,SFDC_USERNAME)
                 }
                 stage('APEX TEST'){
-                    runApexTest(toolbelt, RUN_ARTIFACT_DIR, HUB_ORG_USERNAME_UAT)
+                    runApexTest(toolbelt, RUN_ARTIFACT_DIR, HUB_ORG_USERNAME_DEV)
                 }
                 stage('GET RESULTS'){
                     junit keepLongStdio: true, testResults: 'tests/**/*-junit.xml'
