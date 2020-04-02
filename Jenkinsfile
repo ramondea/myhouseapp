@@ -10,7 +10,7 @@ node {
     def SFDC_DEVELOPER_MODE = env.SFDC_DEVELOPER_MODE;
 
     //production variables 
-    def HUB_ORG=env.HUB_ORG_DEVOPS_PRD
+    def HUB_ORG_USERNAME=env.HUB_ORG_DEVOPS_PRD
     def SFDC_HOST = env.SFDC_HOST_DEVOPS_PRD
     def JWT_KEY_CRED_ID = env.JWT_CRED_ID_DEVOPS_PRD
     def CONNECTED_APP_CONSUMER_KEY=env.CONNECTED_APP_CONSUMER_KEY_DEVOPS_PRD
@@ -18,9 +18,9 @@ node {
 
 
     //sandbox variables or other environments 
-    def HUB_ORG_UAT =env.HUB_ORG_DEVOPS_UAT
+    def HUB_ORG_USERNAME_UAT =env.HUB_ORG_USERNAME_UAT
     //def SFDC_HOST_UAT = env.SFDC_HOST_DEVOPS_PRD
-    def JWT_KEY_CRED_ID = env.JWT_CRED_ID_DEVOPS_PRD // utilizado para todos os ambientes
+    //def JWT_KEY_CRED_ID = env.JWT_CRED_ID_DEVOPS_PRD // utilizado para todos os ambientes
     def CONNECTED_APP_CONSUMER_KEY_UAT =env.CONNECTED_APP_CONSUMER_KEY_DEVOPS_UAT
     def ORG_ALIAS_DEVOPS_UAT = env.ORG_ALIAS_DEVOPS_UAT
 
@@ -49,13 +49,13 @@ node {
             echo '------------------ INICIANDO O SCRATCH ORG'
             withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {
                 stage('CREATE SCRATCH ORG'){
-                    deployScratch(toolbelt,CONNECTED_APP_CONSUMER_KEY_UAT, HUB_ORG_UAT, HUB_ORG_UAT, SFDC_HOST, jwt_key_file)
+                    deployScratch(toolbelt,CONNECTED_APP_CONSUMER_KEY_UAT, HUB_ORG_USERNAME_UAT, ORG_ALIAS_DEVOPS_UAT, SFDC_HOST, jwt_key_file)
                 }
                 stage('PUSH CODE'){
-                    pushCodeScratchOrg()
+                    pushCodeScratchOrg(toolbelt,SFDC_USERNAME)
                 }
                 stage('APEX TEST'){
-                    runApexTest()
+                    runApexTest(toolbelt, RUN_ARTIFACT_DIR, HUB_ORG_USERNAME_UAT)
                 }
                 stage('GET RESULTS'){
                     junit keepLongStdio: true, testResults: 'tests/**/*-junit.xml'
@@ -244,42 +244,10 @@ node {
             echo '------------------ FINALIZANDO O NOTIFICATION'
         }
     }
-    /*
-    withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {
-        stage('Create Scratch Org') {
-
-            
-
-        }
-
-        stage('Push To Test Org') {
-            
-        }
-
-        stage('Run Apex Test') {
-            sh "mkdir -p ${RUN_ARTIFACT_DIR}"
-            timeout(time: 120, unit: 'SECONDS') {
-                rc = sh returnStatus: true, script: "${toolbelt} force:apex:test:run --testlevel RunLocalTests --outputdir ${RUN_ARTIFACT_DIR} --resultformat tap --targetusername ${SFDC_USERNAME}"
-                if (rc != 0) {
-                    error 'apex test run failed'
-                }
-            }
-        }
-
-        stage('collect results') {
-            //junit keepLongStdio: true, testResults: 'tests/* /*-junit.xml'
-        }
-
-        stage('Delete Test Org') {
-
-        
-    }
-    }
-    **/
 }
 
-def deployScratch(appKey, hubOrg, orgAlias, sfdcHost, jwtKeyFile){
-    rc = sh returnStatus: true, script: "${toolbelt} force:auth:jwt:grant --clientid ${appKey} --username ${hubOrg} --setalias ${orgAlias} --instanceurl ${sfdcHost} --setdefaultdevhubusername --jwtkeyfile ${jwtKeyFile} "
+def deployScratch(toolbelt,appKey, hubOrgUsername, orgAlias, sfdcHost, jwtKeyFile){
+    rc = sh returnStatus: true, script: "${toolbelt} force:auth:jwt:grant --clientid ${appKey} --username ${hubOrgUsername} --setalias ${orgAlias} --instanceurl ${sfdcHost} --setdefaultdevhubusername --jwtkeyfile ${jwtKeyFile} "
     if (rc != 0) { error 'HUB AUTH ERROR' }
 
     // need to pull out assigned username
@@ -292,22 +260,22 @@ def deployScratch(appKey, hubOrg, orgAlias, sfdcHost, jwtKeyFile){
     robj = null
 }
 
-def pushCodeScratchOrg(){
-    rc = sh returnStatus: true, script: "${toolbelt} force:source:push --targetusername ${SFDC_USERNAME}"
+def pushCodeScratchOrg(toolbelt,sfdcUsername){
+    rc = sh returnStatus: true, script: "${toolbelt} force:source:push --targetusername ${sfdcUsername}"
     if (rc != 0) {
         error 'push failed'
     }
     // assign permset
-    rc = sh returnStatus: true, script: "${toolbelt} force:user:permset:assign --targetusername ${SFDC_USERNAME} --permsetname DreamHouse"
+    rc = sh returnStatus: true, script: "${toolbelt} force:user:permset:assign --targetusername ${sfdcUsername} --permsetname DreamHouse"
     if (rc != 0) {
         error 'permset:assign failed'
     }
 }
 
-def runApexTest(){
-    sh "mkdir -p ${RUN_ARTIFACT_DIR}"
+def runApexTest(toolbelt, runArtifactDir, sfdcUsername){
+    sh "mkdir -p ${runArtifactDir}"
         timeout(time: 120, unit: 'SECONDS') {
-            rc = sh returnStatus: true, script: "${toolbelt} force:apex:test:run --testlevel RunLocalTests --outputdir ${RUN_ARTIFACT_DIR} --resultformat tap --targetusername ${SFDC_USERNAME}"
+            rc = sh returnStatus: true, script: "${toolbelt} force:apex:test:run --testlevel RunLocalTests --outputdir ${runArtifactDir} --resultformat tap --targetusername ${sfdcUsername}"
             if (rc != 0) {
                 error 'apex test run failed'
             }
