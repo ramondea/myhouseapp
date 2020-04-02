@@ -64,6 +64,13 @@ node {
             echo '------------------ FINALIZANDO O CHECKOUT SOURCE '
         }
 
+        stage('SONARQUBE ANALYSIS') {
+            def scannerHome = tool 'SonarScanner 4.0';
+                withSonarQubeEnv('sonarCloud') { 
+                sh "${scannerHome}/bin/sonar-scanner"
+            }
+        }
+
         stage ('LIGHTNING WEB COMPONENTS TESTS'){
             echo '------------------ INICIANDO O LWC TESTS'
             
