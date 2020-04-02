@@ -16,7 +16,14 @@ node {
     def CONNECTED_APP_CONSUMER_KEY=env.CONNECTED_APP_CONSUMER_KEY_DEVOPS_PRD
     def ORG_ALIAS_DEVOPS_PRD = env.ORG_ALIAS_DEVOPS_PRD
 
+
     //sandbox variables or other environments 
+    def HUB_ORG_UAT =env.HUB_ORG_DEVOPS_UAT
+    //def SFDC_HOST_UAT = env.SFDC_HOST_DEVOPS_PRD
+    def JWT_KEY_CRED_ID = env.JWT_CRED_ID_DEVOPS_PRD // utilizado para todos os ambientes
+    def CONNECTED_APP_CONSUMER_KEY_UAT =env.CONNECTED_APP_CONSUMER_KEY_DEVOPS_UAT
+    def ORG_ALIAS_DEVOPS_UAT = env.ORG_ALIAS_DEVOPS_UAT
+
 
     if(env.BRANCH_NAME.startsWith('developer_')){
         stage('LOGOUT SFDX'){
@@ -42,7 +49,7 @@ node {
             echo '------------------ INICIANDO O SCRATCH ORG'
             withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {
                 stage('CREATE SCRATCH ORG'){
-                    deployScratch(CONNECTED_APP_CONSUMER_KEY, HUB_ORG, ORG_ALIAS_DEVOPS_PRD, SFDC_HOST, jwt_key_file)
+                    deployScratch(toolbelt,CONNECTED_APP_CONSUMER_KEY_UAT, HUB_ORG_UAT, HUB_ORG_UAT, SFDC_HOST, jwt_key_file)
                 }
                 stage('PUSH CODE'){
                     pushCodeScratchOrg()
