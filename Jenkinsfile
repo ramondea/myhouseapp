@@ -314,6 +314,7 @@ def getCommand(){
   }else{
     return "bat"
   }
+}
 // executa os testes do LWC
 def runLWCTests(){
 
@@ -336,4 +337,3 @@ def runDeleteScrathOrg(targetusername){
         }
 }
 
-}
