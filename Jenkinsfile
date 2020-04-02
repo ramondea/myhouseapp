@@ -64,11 +64,29 @@ node {
             echo '------------------ FINALIZANDO O CHECKOUT SOURCE '
         }
 
-        stage('SONARQUBE ANALYSIS') {
-            def scannerHome = tool 'SonarScanner 4.0';
-                withSonarQubeEnv('sonarCloud') { 
-                sh "${scannerHome}/bin/sonar-scanner"
-            }
+        stage ('ANALYSIS') {
+            def mvnHome = tool 'mvn-default'
+
+            sh "${mvnHome}/bin/mvn --batch-mode -V -U -e checkstyle:checkstyle pmd:pmd pmd:cpd findbugs:findbugs"
+
+            def checkstyle = scanForIssues tool: checkStyle(pattern: '**/target/checkstyle-result.xml')
+            publishIssues issues: [checkstyle]
+   
+            def pmd = scanForIssues tool: pmdParser(pattern: '**/target/pmd.xml')
+            publishIssues issues: [pmd]
+        
+            def cpd = scanForIssues tool: cpd(pattern: '**/target/cpd.xml')
+            publishIssues issues: [cpd]
+        
+            def spotbugs = scanForIssues tool: spotBugs(pattern: '**/target/findbugsXml.xml')
+            publishIssues issues: [spotbugs]
+
+            def maven = scanForIssues tool: mavenConsole()
+            publishIssues issues: [maven]
+        
+            publishIssues id: 'analysis', name: 'All Issues', 
+                issues: [checkstyle, pmd, spotbugs], 
+                filters: [includePackage('io.jenkins.plugins.analysis.*')]
         }
 
         stage ('LIGHTNING WEB COMPONENTS TESTS'){
