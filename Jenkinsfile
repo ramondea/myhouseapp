@@ -117,7 +117,7 @@ node {
 
                 }
                 stage('APEX TEST'){
-                    runApexTest(toolbelt, RUN_ARTIFACT_DIR, SFDC_USERNAME)
+                    runApexTest(toolbelt, RUN_ARTIFACT_DIR, SFDC_USERNAME, "RunLocalTests")
                 }
                 stage('GET RESULTS'){
                     junit keepLongStdio: true, testResults: 'tests/**/*-junit.xml'
@@ -194,7 +194,7 @@ node {
                     pushCodeScratchOrg(toolbelt,SFDC_USERNAME)
                 }
                 stage('APEX TEST'){
-                    runApexTest(toolbelt, RUN_ARTIFACT_DIR, SFDC_USERNAME)
+                    runApexTest(toolbelt, RUN_ARTIFACT_DIR, SFDC_USERNAME, "RunLocalTests")
                 }
                 stage('GET RESULTS'){
                     junit keepLongStdio: true, testResults: 'tests/**/*-junit.xml'
@@ -221,7 +221,7 @@ node {
 
                 }
                 stage('APEX TEST'){
-                    runApexTest(toolbelt, RUN_ARTIFACT_DIR, SFDC_USERNAME, apexText)
+                    runApexTest(toolbelt, RUN_ARTIFACT_DIR, SFDC_USERNAME, "RunAllTestsInOrg")
                 }
                 stage('GET RESULTS'){
                     junit keepLongStdio: true, testResults: 'tests/**/*-junit.xml'
@@ -397,10 +397,14 @@ def pushCodeScratchOrg(toolbelt,sfdcUsername){
     }
 }
 
-def runApexTest(toolbelt, runArtifactDir, sfdcUsername){
+//Values: 
+//RunSpecifiedTests— > Only the tests that you specify are run.
+//RunLocalTests—> All tests in your org are run, except the ones that originate from installed managed packages.
+//RunAllTestsInOrg—> All tests are in your org and in installed managed packages are run.
+def runApexTest(toolbelt, runArtifactDir, sfdcUsername, testLevel){
     sh "mkdir -p ${runArtifactDir}"
         timeout(time: 120, unit: 'SECONDS') {
-            rc = sh returnStatus: true, script: "${toolbelt} force:apex:test:run --testlevel RunLocalTests --outputdir ${runArtifactDir} --resultformat tap --targetusername ${sfdcUsername}"
+            rc = sh returnStatus: true, script: "${toolbelt} force:apex:test:run --testlevel  --outputdir ${runArtifactDir} --resultformat tap --targetusername ${sfdcUsername}"
             if (rc != 0) {
                 error 'apex test run failed'
             }
@@ -415,18 +419,7 @@ def getCommand(){
     return "bat"
   }
 }
-// executa os testes do LWC
-def runLWCTests(){
 
-}
-// executa os testes do LC 
-def runLCTests(){
-
-}
-// executa o logout antes de criar o pipeline 
-def runLogoutSFDX(){
-
-}
 // deleta uma scratch org
 def runDeleteScrathOrg(toolbelt,targetusername){
     timeout(time: 120, unit: 'SECONDS') {
