@@ -306,7 +306,7 @@ node {
                         }
                         //gerando uma nova versao do pacote: 
                         //verificar o funcionamento da versao do pacote, este comando altera o package.json
-                        output = sh returnStdout: true, script: "${toolbelt}/sfdx force:package:version:create --package ${PACKAGE_ALIAS} --installationkeybypass --wait 10 --json --targetdevhubusername ${HUB_ORG_USERNAME}"
+                        output = sh returnStdout: true, script: "${toolbelt}/sfdx force:package:version:create --package ${PACKAGE_ALIAS} --installationkeybypass --wait 10 --json --targetdevhubusername ${HUB_ORG_USERNAME} --tag meuIdCommit -n"
                         // aguarda 5 minutos 
                         sleep 300
 
@@ -327,10 +327,27 @@ node {
                                 error 'ORG AUTH ERROR'
                             }
                         }
-                        rc = sh returnStatus: true, script: "${toolbelt}/sfdx force:package:install --package ${PACKAGE_VERSION} --targetusername ${HUB_ORG_USERNAME_UAT}  --wait 10"
+                        rp = sh returnStatus: true, script: "${toolbelt}/sfdx force:package:install --package ${PACKAGE_VERSION} --targetusername ${HUB_ORG_USERNAME_UAT}  --wait 10"
+                        echo rp
                     }
 
                 }
+        }
+
+        timeout(time: 10, unit: "HOURS") {
+            input message: 'Promote Package Version?', ok: 'Yes'
+
+            stage('GENERATE PACKAGE PROMOTE'){
+                 withCredentials([file(credentialsId: JWT_KEY_CRED_ID, variable: 'jwt_key_file')]) {
+                    rc = sh returnStatus: true, script: "${toolbelt} force:auth:jwt:grant --clientid ${CONNECTED_APP_CONSUMER_KEY_DEVOPS_UAT} --username ${HUB_ORG_USERNAME} --setalias ${ORG_ALIAS_DEVOPS_PRD} --instanceurl ${SFDC_HOST_DEVOPS_PRD} --jwtkeyfile ${jwt_key_file} "
+                    if (rc != 0) { 
+                        error 'ORG AUTH ERROR'
+                    }
+                    rp = sh returnStdout: true, script: "${toolbelt}  force:package:version:promote --package ${PACKAGE_VERSION} --packagetype Unlocked --targetdevhubusername ${HUB_ORG_USERNAME} -n"
+                    echo rp
+                 }       
+            }
+
         }
         stage('NOTIFICATION'){
             echo '------------------ INICIANDO O NOTIFICATION'
