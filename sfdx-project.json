@@ -12,6 +12,9 @@
     "sfdcLoginUrl": "https://login.salesforce.com",
     "sourceApiVersion": "48.0",
     "packageAliases": {
-        "myHouseApp": "0Ho6g0000004CxZCAU"
+        "myHouseApp": "0Ho6g0000004CxZCAU",
+        "myHouseApp@0.1.0-1": "04t6g000008f5DHAAY",
+        "myHouseApp@0.1.0-2": "04t6g000008f5DMAAY",
+        "myHouseApp@0.1.0-3": "04t6g000008f5DRAAY"
     }
 }
