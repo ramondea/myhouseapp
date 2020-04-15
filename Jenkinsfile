@@ -42,6 +42,18 @@ node {
     def CONNECTED_APP_CONSUMER_KEY_DEV =env.CONNECTED_APP_CONSUMER_KEY_DEVOPS_DEV
     def ORG_ALIAS_DEVOPS_DEV = env.ORG_ALIAS_DEVOPS_DEV
 
+    //Caso o pipline apresente algum erro, necessita efetuar o logout
+    stage('LOGOUT'){
+        try{
+            rc = sh returnStatus: true, script: "${toolbelt} force:auth:logout --targetusername ${orgAliasDevHub} -p"
+            if (rc != 0) { 
+            echo ' ERROR IN LOGOUT ' 
+        }
+        }catch (all) {
+            echo all
+        }
+    }
+
     //Limpando o workspace, sempre fazer isso pois o sfdx deixa alguns arquivos que dao erro em criar scratch orgs 
     stage('CLEAN WORKSPACE'){
         cleanWs()
