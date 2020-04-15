@@ -42,18 +42,6 @@ node {
     def CONNECTED_APP_CONSUMER_KEY_DEV =env.CONNECTED_APP_CONSUMER_KEY_DEVOPS_DEV
     def ORG_ALIAS_DEVOPS_DEV = env.ORG_ALIAS_DEVOPS_DEV
 
-    //Caso o pipline apresente algum erro, necessita efetuar o logout
-    stage('LOGOUT'){
-        try{
-            rc = sh returnStatus: true, script: "${toolbelt} force:auth:logout --targetusername ${HUB_ORG_USERNAME} -p"
-            if (rc != 0) { 
-            echo ' ERROR IN LOGOUT ' 
-        }
-        }catch (all) {
-            echo all
-        }
-    }
-
     //Limpando o workspace, sempre fazer isso pois o sfdx deixa alguns arquivos que dao erro em criar scratch orgs 
     stage('CLEAN WORKSPACE'){
         cleanWs()
@@ -67,6 +55,19 @@ node {
             deleteDir()
         }
     }
+
+    //Caso o pipline apresente algum erro, necessita efetuar o logout
+    stage('LOGOUT'){
+        try{
+            rc = sh returnStatus: true, script: "${toolbelt} force:auth:logout --targetusername ${HUB_ORG_USERNAME} -p"
+            if (rc != 0) { 
+            echo ' ERROR IN LOGOUT ' 
+        }
+        }catch (all) {
+            echo all
+        }
+    }
+
     //sempre utilizar esse comando em multibranch pipeline
     stage('CHECKOUT SOURCE') {
             echo '------------------ INICIANDO O CHECKOUT SOURCE '
@@ -235,7 +236,7 @@ node {
         }
         stage('NOTIFICATION'){
             echo '------------------ INICIANDO O NOTIFICATION'
-            echo $BUILD_URL
+            echo "${BUILD_URL}"
             echo '------------------ FINALIZANDO O NOTIFICATION'
         }
     } 
@@ -333,7 +334,7 @@ node {
         }
         stage('NOTIFICATION'){
             echo '------------------ INICIANDO O NOTIFICATION'
-            echo $BUILD_URL
+            echo "${BUILD_URL}"
             echo '------------------ FINALIZANDO O NOTIFICATION'
         }
     }
