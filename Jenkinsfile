@@ -45,7 +45,7 @@ node {
     //Caso o pipline apresente algum erro, necessita efetuar o logout
     stage('LOGOUT'){
         try{
-            rc = sh returnStatus: true, script: "${toolbelt} force:auth:logout --targetusername ${orgAliasDevHub} -p"
+            rc = sh returnStatus: true, script: "${toolbelt} force:auth:logout --targetusername ${HUB_ORG_USERNAME} -p"
             if (rc != 0) { 
             echo ' ERROR IN LOGOUT ' 
         }
