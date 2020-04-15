@@ -389,7 +389,7 @@ def runApexTest(toolbelt, runArtifactDir, sfdcUsername, testLevel, saveData){
     if(saveData){
         sh "mkdir -p ${runArtifactDir}"
         timeout(time: 120, unit: 'SECONDS') {
-            rc = sh returnStatus: true, script: "${toolbelt} force:apex:test:run --testlevel  --outputdir ${runArtifactDir} --resultformat tap --targetusername ${sfdcUsername}"
+            rc = sh returnStatus: true, script: "${toolbelt} force:apex:test:run --testlevel ${testLevel}  --outputdir ${runArtifactDir} --resultformat tap --targetusername ${sfdcUsername}"
             if (rc != 0) {
                 error 'apex test run failed'
             }
@@ -397,7 +397,7 @@ def runApexTest(toolbelt, runArtifactDir, sfdcUsername, testLevel, saveData){
     }else{
         sh "mkdir -p ${runArtifactDir}"
         timeout(time: 120, unit: 'SECONDS') {
-            rc = sh returnStatus: true, script: "${toolbelt} force:apex:test:run --testlevel  --resultformat tap --targetusername ${sfdcUsername}"
+            rc = sh returnStatus: true, script: "${toolbelt} force:apex:test:run --testlevel ${testLevel}  --resultformat tap --targetusername ${sfdcUsername}"
             if (rc != 0) {
                 error 'apex test run failed'
             }
