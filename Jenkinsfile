@@ -328,6 +328,7 @@ node {
                             }
                         }
                         rp = sh returnStatus: true, script: "${toolbelt}/sfdx force:package:install --package ${PACKAGE_VERSION} --targetusername ${HUB_ORG_USERNAME_UAT}  --wait 10"
+                        echo rp
                     }
 
                 }
@@ -343,7 +344,7 @@ node {
                         error 'ORG AUTH ERROR'
                     }
                     rp = sh returnStdout: true, script: "${toolbelt}  force:package:version:promote --package ${PACKAGE_VERSION} --packagetype Unlocked --targetdevhubusername ${HUB_ORG_USERNAME} -n"
-
+                    echo rp
                  }       
             }
 
